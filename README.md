@@ -32,8 +32,8 @@ Das Backend basiert auf folgenden Technologien:
 - REST API: Spring Web  
 - Datenbank: (geplant) PostgreSQL  
 - Frontend: (geplant) Vue.js
-- 
+  
 # Entwickler
 
-- Natasha Valentine- Schmelzer
+- Natasha Valentine-Schmelzer
 - Reem Abdelmagid
