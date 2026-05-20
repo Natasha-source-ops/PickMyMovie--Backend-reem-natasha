@@ -8,7 +8,7 @@ RUN ./gradlew dependencies --no-daemon
 
 COPY src ./src
 RUN ./gradlew bootJar --no-daemon
-RUN find build/libs -name "*.jar" ! -name "*plain.jar" -exec cp {} app.jar
+RUN find build/libs -name "*.jar" ! -name "*plain.jar" -exec cp {} app.jar \;
 
 FROM eclipse-temurin:21-jre
 
