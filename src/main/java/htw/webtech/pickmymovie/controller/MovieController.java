@@ -1,7 +1,6 @@
 package htw.webtech.pickmymovie.controller;
 
-import htw.webtech.pickmymovie.controller.dto.MovieRequest;
-import htw.webtech.pickmymovie.model.TmdbMovie;
+import htw.webtech.pickmymovie.controller.dto.MovieResponse;
 import htw.webtech.pickmymovie.service.MovieService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,10 +21,8 @@ public class MovieController {
     }
 
     @GetMapping("/movies")
-    public ResponseEntity<List<TmdbMovie>> getMovies() {
+    public ResponseEntity<List<MovieResponse>> getMovies() {
         return ResponseEntity.ok(movieService.getAllMovies());
-
     }
 }
-
 

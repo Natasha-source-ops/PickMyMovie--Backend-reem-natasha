@@ -1,0 +1,13 @@
+# IntelliJ
+.idea/
+*.iml
+
+# Maven build output
+target/
+
+# Environment and secrets
+.env
+application-local.properties
+
+# macOS
+.DS_Store

@@ -1,0 +1,6 @@
+**/*.class
+.env
+.env.local
+build/
+.gradle/
+.DS_Store
