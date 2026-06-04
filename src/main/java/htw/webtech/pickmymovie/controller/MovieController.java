@@ -24,5 +24,10 @@ public class MovieController {
     public ResponseEntity<List<MovieResponse>> getMovies() {
         return ResponseEntity.ok(movieService.getAllMovies());
     }
+
+    @GetMapping("/users-test")
+    public String usersTest() {
+        return "users test works";
+    }
 }
 
