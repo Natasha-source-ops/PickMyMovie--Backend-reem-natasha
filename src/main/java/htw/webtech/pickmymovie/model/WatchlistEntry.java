@@ -8,23 +8,30 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 
-    @Entity
-    @Table(name = "watchlist_entries")
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Getter
-    @Setter
+@Entity
+@Table(name = "watchlist_entries")
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
+public class WatchlistEntry {
 
-    public class WatchlistEntry {
-    @Id()
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Column
     private Long userId;
+
     @Column
     private Long movieId;
+
+    @Column
+    private String movieTitle;
+
+    @Column
+    private String posterUrl;
+
     @Column
     private LocalDate addedDate;
-
-
 }
