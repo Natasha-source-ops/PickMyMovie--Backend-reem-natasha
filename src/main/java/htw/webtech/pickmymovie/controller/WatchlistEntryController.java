@@ -15,11 +15,8 @@ public class WatchlistEntryController {
     private WatchlistService watchlistService;
 
     @PostMapping
-    public void addToWatchlist(@RequestBody WatchlistEntry entry) {
-        watchlistService.addToWatchlist(
-                entry.getUserId(),
-                entry.getMovieId()
-        );
+    public WatchlistEntry addToWatchlist(@RequestBody WatchlistEntry entry) {
+        return watchlistService.addToWatchlist(entry);
     }
 
     @GetMapping("/{userId}")

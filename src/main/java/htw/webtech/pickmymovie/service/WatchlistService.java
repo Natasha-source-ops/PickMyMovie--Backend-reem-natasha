@@ -6,19 +6,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 
 @Service
 public class WatchlistService {
+
     @Autowired
     private WatchListEntryRepository watchListEntryRepository;
 
-    public void addToWatchlist(long userId, long movieId) {
-        WatchlistEntry entry = new WatchlistEntry();
-        entry.setUserId(userId);
-        entry.setMovieId(movieId);
-        entry.setAddedDate(LocalDate.now());
-        watchListEntryRepository.save(entry);
+    public WatchlistEntry addToWatchlist(WatchlistEntry entry) {
+        entry.setAddedDate(LocalDate.now(ZoneId.of("Europe/Berlin")));
+        return watchListEntryRepository.save(entry);
     }
 
     public void removeFromWatchlist(long userId, long movieId) {
@@ -26,8 +25,6 @@ public class WatchlistService {
     }
 
     public List<WatchlistEntry> getWatchlist(long userId) {
-     return watchListEntryRepository.findByUserId(userId);
+        return watchListEntryRepository.findByUserId(userId);
     }
 }
-
-
