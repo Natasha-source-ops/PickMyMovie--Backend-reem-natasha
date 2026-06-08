@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import org.mindrot.jbcrypt.BCrypt;
 
 @Service
 public class UserService {
@@ -15,6 +16,7 @@ public class UserService {
     private UserRepository userRepository;
 
     public User createUser(User user) {
+        user.setPassword(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt()));
         return userRepository.save(user);
     }
 
@@ -28,5 +30,14 @@ public class UserService {
 
     public void deleteUserById(Long id) {
         userRepository.deleteById(id);
+    }
+
+    public Optional<User>  userLogin( String username, String password) {
+        Optional<User> user = userRepository.findByUsername(username);
+        if (user.isPresent() && BCrypt.checkpw(password, user.get().getPassword()))  {
+
+            return Optional.of(user.get());
+        }
+        return Optional.empty();
     }
 }
