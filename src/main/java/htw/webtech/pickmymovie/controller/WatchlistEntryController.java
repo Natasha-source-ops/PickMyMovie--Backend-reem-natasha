@@ -23,4 +23,9 @@ public class WatchlistEntryController {
     public List<WatchlistEntry> getWatchlist(@PathVariable Long userId) {
         return watchlistService.getWatchlist(userId);
     }
+
+    @DeleteMapping("/{id}")
+    public void deleteWatchlistEntry(@PathVariable Long id) {
+        watchlistService.deleteWatchlistEntry(id);
+    }
 }

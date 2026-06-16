@@ -27,4 +27,8 @@ public class WatchlistService {
     public List<WatchlistEntry> getWatchlist(long userId) {
         return watchListEntryRepository.findByUserId(userId);
     }
+
+    public void deleteWatchlistEntry(Long id) {
+        watchListEntryRepository.deleteById(id);
+    }
 }
