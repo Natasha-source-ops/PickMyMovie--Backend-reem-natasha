@@ -37,7 +37,12 @@ public class UserController {
 
     @PostMapping("/login")
     public Optional<User> userLogin(@RequestBody User user) {
-        return userService.userLogin(user.getUsername(), user.getPassword());
+        String login = user.getUsername();
 
+        if (login == null || login.isBlank()) {
+            login = user.getEmail();
+        }
+
+        return userService.userLogin(login, user.getPassword());
     }
 }

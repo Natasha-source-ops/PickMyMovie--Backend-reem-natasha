@@ -32,12 +32,23 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
-    public Optional<User>  userLogin( String username, String password) {
-        Optional<User> user = userRepository.findByUsername(username);
-        if (user.isPresent() && BCrypt.checkpw(password, user.get().getPassword()))  {
+    public Optional<User> userLogin(String login, String password) {
+        Optional<User> user = userRepository.findByUsernameOrEmail(login, login);
 
-            return Optional.of(user.get());
+        if (user.isEmpty()) {
+            return Optional.empty();
         }
+
+        String storedPassword = user.get().getPassword();
+
+        try {
+            if (BCrypt.checkpw(password, storedPassword)) {
+                return Optional.of(user.get());
+            }
+        } catch (IllegalArgumentException e) {
+            return Optional.empty();
+        }
+
         return Optional.empty();
     }
 }
