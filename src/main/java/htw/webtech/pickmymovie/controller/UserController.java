@@ -44,15 +44,17 @@ public class UserController {
             login = user.getEmail();
         }
 
+        if (login == null || login.isBlank() || user.getPassword() == null || user.getPassword().isBlank()) {
+            return ResponseEntity.status(400).body("Missing login or password");
+        }
+
         Optional<User> foundUser = userService.findUserForLogin(login);
 
         if (foundUser.isEmpty()) {
             return ResponseEntity.status(404).body("User not found");
         }
 
-        boolean passwordCorrect = userService.passwordMatches(foundUser.get(), user.getPassword());
-
-        if (!passwordCorrect) {
+        if (!userService.passwordMatches(foundUser.get(), user.getPassword())) {
             return ResponseEntity.status(401).body("Wrong password");
         }
 

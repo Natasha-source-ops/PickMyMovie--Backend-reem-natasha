@@ -37,6 +37,10 @@ public class UserService {
     }
 
     public boolean passwordMatches(User user, String password) {
+        if (user == null || password == null || user.getPassword() == null) {
+            return false;
+        }
+
         try {
             return BCrypt.checkpw(password, user.getPassword());
         } catch (IllegalArgumentException e) {
