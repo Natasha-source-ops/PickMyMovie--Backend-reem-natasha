@@ -3,6 +3,7 @@ package htw.webtech.pickmymovie.controller;
 import htw.webtech.pickmymovie.model.User;
 import htw.webtech.pickmymovie.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -36,13 +37,25 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public Optional<User> userLogin(@RequestBody User user) {
+    public ResponseEntity<?> userLogin(@RequestBody User user) {
         String login = user.getUsername();
 
         if (login == null || login.isBlank()) {
             login = user.getEmail();
         }
 
-        return userService.userLogin(login, user.getPassword());
+        Optional<User> foundUser = userService.findUserForLogin(login);
+
+        if (foundUser.isEmpty()) {
+            return ResponseEntity.status(404).body("User not found");
+        }
+
+        boolean passwordCorrect = userService.passwordMatches(foundUser.get(), user.getPassword());
+
+        if (!passwordCorrect) {
+            return ResponseEntity.status(401).body("Wrong password");
+        }
+
+        return ResponseEntity.ok(foundUser.get());
     }
 }

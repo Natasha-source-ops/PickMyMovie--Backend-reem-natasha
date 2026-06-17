@@ -32,23 +32,15 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
-    public Optional<User> userLogin(String login, String password) {
-        Optional<User> user = userRepository.findByUsernameOrEmail(login, login);
+    public Optional<User> findUserForLogin(String login) {
+        return userRepository.findByUsernameOrEmail(login, login);
+    }
 
-        if (user.isEmpty()) {
-            return Optional.empty();
-        }
-
-        String storedPassword = user.get().getPassword();
-
+    public boolean passwordMatches(User user, String password) {
         try {
-            if (BCrypt.checkpw(password, storedPassword)) {
-                return Optional.of(user.get());
-            }
+            return BCrypt.checkpw(password, user.getPassword());
         } catch (IllegalArgumentException e) {
-            return Optional.empty();
+            return false;
         }
-
-        return Optional.empty();
     }
 }
