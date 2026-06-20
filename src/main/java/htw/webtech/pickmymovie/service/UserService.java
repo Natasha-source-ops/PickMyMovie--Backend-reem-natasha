@@ -2,18 +2,21 @@ package htw.webtech.pickmymovie.service;
 
 import htw.webtech.pickmymovie.Repository.UserRepository;
 import htw.webtech.pickmymovie.model.User;
+import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import org.mindrot.jbcrypt.BCrypt;
 
 @Service
 public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private WatchlistService watchlistService;
 
     public User createUser(User user) {
         if (userRepository.existsByUsername(user.getUsername())) {
@@ -37,6 +40,7 @@ public class UserService {
     }
 
     public void deleteUserById(Long id) {
+        watchlistService.deleteWatchlistEntriesByUserId(id);
         userRepository.deleteById(id);
     }
 

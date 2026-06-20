@@ -8,8 +8,8 @@ import java.util.List;
 public interface WatchListEntryRepository extends JpaRepository<WatchlistEntry, Long> {
 
     void deleteByUserIdAndMovieId(long userId, long movieId);
+
+    void deleteByUserId(Long userId);
+
     List<WatchlistEntry> findByUserId(long userId);
-
-
-
 }
