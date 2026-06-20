@@ -24,17 +24,22 @@ public class MovieService {
         this.tmdbApiKey = tmdbApiKey;
     }
 
-    public List<MovieResponse> getAllMovies() {
+    public List<MovieResponse> getAllMovies(String genreId) {
         if (tmdbApiKey == null || tmdbApiKey.isBlank()) {
             return getFallbackMovies();
         }
 
-        URI uri = UriComponentsBuilder.fromUriString(TMDB_DISCOVER_MOVIES_URL)
+        UriComponentsBuilder builder = UriComponentsBuilder
+                .fromUriString(TMDB_DISCOVER_MOVIES_URL)
                 .queryParam("api_key", tmdbApiKey)
                 .queryParam("language", "en-US")
-                .queryParam("sort_by", "popularity.desc")
-                .build()
-                .toUri();
+                .queryParam("sort_by", "popularity.desc");
+
+        if (genreId != null && !genreId.isBlank()) {
+            builder.queryParam("with_genres", genreId);
+        }
+
+        URI uri = builder.build().toUri();
 
         TmdbResponse response = restTemplate.getForObject(uri, TmdbResponse.class);
 
