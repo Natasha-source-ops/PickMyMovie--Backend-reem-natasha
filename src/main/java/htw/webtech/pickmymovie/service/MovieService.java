@@ -14,7 +14,11 @@ import java.util.List;
 @Service
 public class MovieService {
 
-    private static final String TMDB_DISCOVER_MOVIES_URL = "https://api.themoviedb.org/3/discover/movie";
+    private static final String TMDB_DISCOVER_MOVIES_URL =
+            "https://api.themoviedb.org/3/discover/movie";
+
+    private static final String TMDB_SEARCH_MOVIES_URL =
+            "https://api.themoviedb.org/3/search/movie";
 
     private final RestTemplate restTemplate;
     private final String tmdbApiKey;
@@ -24,16 +28,26 @@ public class MovieService {
         this.tmdbApiKey = tmdbApiKey;
     }
 
-    public List<MovieResponse> getAllMovies(String genreId) {
+    public List<MovieResponse> getAllMovies(String genreId, String query) {
         if (tmdbApiKey == null || tmdbApiKey.isBlank()) {
             return getFallbackMovies();
         }
 
-        UriComponentsBuilder builder = UriComponentsBuilder
-                .fromUriString(TMDB_DISCOVER_MOVIES_URL)
-                .queryParam("api_key", tmdbApiKey)
-                .queryParam("language", "en-US")
-                .queryParam("sort_by", "popularity.desc");
+        UriComponentsBuilder builder;
+
+        if (query != null && !query.isBlank()) {
+            builder = UriComponentsBuilder
+                    .fromUriString(TMDB_SEARCH_MOVIES_URL)
+                    .queryParam("api_key", tmdbApiKey)
+                    .queryParam("language", "en-US")
+                    .queryParam("query", query);
+        } else {
+            builder = UriComponentsBuilder
+                    .fromUriString(TMDB_DISCOVER_MOVIES_URL)
+                    .queryParam("api_key", tmdbApiKey)
+                    .queryParam("language", "en-US")
+                    .queryParam("sort_by", "popularity.desc");
+        }
 
         if (genreId != null && !genreId.isBlank()) {
             builder.queryParam("with_genres", genreId);
