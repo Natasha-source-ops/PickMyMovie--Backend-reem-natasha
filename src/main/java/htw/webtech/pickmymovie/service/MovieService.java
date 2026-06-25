@@ -17,9 +17,6 @@ public class MovieService {
     private static final String TMDB_DISCOVER_MOVIES_URL =
             "https://api.themoviedb.org/3/discover/movie";
 
-    private static final String TMDB_SEARCH_MOVIES_URL =
-            "https://api.themoviedb.org/3/search/movie";
-
     private final RestTemplate restTemplate;
     private final String tmdbApiKey;
 
@@ -28,29 +25,24 @@ public class MovieService {
         this.tmdbApiKey = tmdbApiKey;
     }
 
-    public List<MovieResponse> getAllMovies(String genreId, String query) {
+    public List<MovieResponse> getAllMovies(String genreId, String query, String providerId) {
         if (tmdbApiKey == null || tmdbApiKey.isBlank()) {
             return getFallbackMovies();
         }
 
-        UriComponentsBuilder builder;
-
-        if (query != null && !query.isBlank()) {
-            builder = UriComponentsBuilder
-                    .fromUriString(TMDB_SEARCH_MOVIES_URL)
-                    .queryParam("api_key", tmdbApiKey)
-                    .queryParam("language", "en-US")
-                    .queryParam("query", query);
-        } else {
-            builder = UriComponentsBuilder
-                    .fromUriString(TMDB_DISCOVER_MOVIES_URL)
-                    .queryParam("api_key", tmdbApiKey)
-                    .queryParam("language", "en-US")
-                    .queryParam("sort_by", "popularity.desc");
-        }
+        UriComponentsBuilder builder = UriComponentsBuilder
+                .fromUriString(TMDB_DISCOVER_MOVIES_URL)
+                .queryParam("api_key", tmdbApiKey)
+                .queryParam("language", "en-US")
+                .queryParam("sort_by", "popularity.desc");
 
         if (genreId != null && !genreId.isBlank()) {
             builder.queryParam("with_genres", genreId);
+        }
+
+        if (providerId != null && !providerId.isBlank()) {
+            builder.queryParam("watch_region", "DE");
+            builder.queryParam("with_watch_providers", providerId);
         }
 
         URI uri = builder.build().toUri();
@@ -63,8 +55,21 @@ public class MovieService {
 
         return response.getResults()
                 .stream()
+                .filter(movie -> matchesSearchQuery(movie, query))
                 .map(this::toMovieResponse)
                 .toList();
+    }
+
+    private boolean matchesSearchQuery(TmdbMovie movie, String query) {
+        if (query == null || query.isBlank()) {
+            return true;
+        }
+
+        if (movie.getTitle() == null) {
+            return false;
+        }
+
+        return movie.getTitle().toLowerCase().contains(query.toLowerCase());
     }
 
     private List<MovieResponse> getFallbackMovies() {
