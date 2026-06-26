@@ -5,6 +5,7 @@ import htw.webtech.pickmymovie.service.RatingService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -29,6 +30,13 @@ public class RatingController {
     @GetMapping("/ratings/movie/{movieId}/average")
     public double getAverageRatingByMovie(@PathVariable Long movieId) {
         return ratingService.getAverageRatingByMovie(movieId);
+    }
+
+    @GetMapping("/ratings/averages")
+    public Map<Long, Double> getAverageRatingsByMovies(
+            @RequestParam List<Long> movieIds
+    ) {
+        return ratingService.getAverageRatingsByMovies(movieIds);
     }
 
     @DeleteMapping("/ratings/{id}")

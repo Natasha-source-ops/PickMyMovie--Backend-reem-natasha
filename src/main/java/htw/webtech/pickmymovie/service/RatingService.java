@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class RatingService {
@@ -36,6 +38,15 @@ public class RatingService {
 
     public void deleteRating(Long ratingId) {
         ratingRepository.deleteById(ratingId);
+    }
+
+    public Map<Long, Double> getAverageRatingsByMovies(List<Long> movieIds) {
+        return movieIds.stream()
+                .distinct()
+                .collect(Collectors.toMap(
+                        movieId -> movieId,
+                        this::getAverageRatingByMovie
+                ));
     }
 }
 
