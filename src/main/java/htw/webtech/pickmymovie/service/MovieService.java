@@ -10,6 +10,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class MovieService {
@@ -19,6 +20,9 @@ public class MovieService {
 
     private static final String TMDB_SEARCH_MOVIES_URL =
             "https://api.themoviedb.org/3/search/movie";
+
+    private static final String TMDB_WATCH_PROVIDERS_URL =
+            "https://api.themoviedb.org/3/movie/{movieId}/watch/providers";
 
     private final RestTemplate restTemplate;
     private final String tmdbApiKey;
@@ -37,33 +41,35 @@ public class MovieService {
         boolean hasProvider = providerId != null && !providerId.isBlank();
         String watchRegion = normalizeRegion(region);
 
-        UriComponentsBuilder builder;
+        URI uri;
 
-        if (hasQuery && !hasProvider) {
-            builder = UriComponentsBuilder
+        if (hasQuery) {
+            uri = UriComponentsBuilder
                     .fromUriString(TMDB_SEARCH_MOVIES_URL)
                     .queryParam("api_key", tmdbApiKey)
                     .queryParam("language", "en-US")
-                    .queryParam("query", query.trim());
+                    .queryParam("query", query.trim())
+                    .build()
+                    .toUri();
         } else {
-            builder = UriComponentsBuilder
+            UriComponentsBuilder builder = UriComponentsBuilder
                     .fromUriString(TMDB_DISCOVER_MOVIES_URL)
                     .queryParam("api_key", tmdbApiKey)
                     .queryParam("language", "en-US")
                     .queryParam("sort_by", "popularity.desc");
+
+            if (genreId != null && !genreId.isBlank()) {
+                builder.queryParam("with_genres", genreId);
+            }
 
             if (hasProvider) {
                 builder.queryParam("watch_region", watchRegion);
                 builder.queryParam("with_watch_providers", providerId);
                 builder.queryParam("with_watch_monetization_types", "flatrate");
             }
-        }
 
-        if (genreId != null && !genreId.isBlank()) {
-            builder.queryParam("with_genres", genreId);
+            uri = builder.build().toUri();
         }
-
-        URI uri = builder.build().toUri();
 
         TmdbResponse response = restTemplate.getForObject(uri, TmdbResponse.class);
 
@@ -73,7 +79,7 @@ public class MovieService {
 
         return response.getResults()
                 .stream()
-                .filter(movie -> !hasProvider || matchesSearchQuery(movie, query))
+                .filter(movie -> !hasProvider || isMovieAvailableOnProvider(movie.getId(), providerId, watchRegion))
                 .map(this::toMovieResponse)
                 .toList();
     }
@@ -86,16 +92,44 @@ public class MovieService {
         return region.trim().toUpperCase();
     }
 
-    private boolean matchesSearchQuery(TmdbMovie movie, String query) {
-        if (query == null || query.isBlank()) {
-            return true;
-        }
-
-        if (movie.getTitle() == null) {
+    @SuppressWarnings("unchecked")
+    private boolean isMovieAvailableOnProvider(Long movieId, String providerId, String region) {
+        if (movieId == null || providerId == null || providerId.isBlank()) {
             return false;
         }
 
-        return movie.getTitle().toLowerCase().contains(query.trim().toLowerCase());
+        URI uri = UriComponentsBuilder
+                .fromUriString(TMDB_WATCH_PROVIDERS_URL.replace("{movieId}", movieId.toString()))
+                .queryParam("api_key", tmdbApiKey)
+                .build()
+                .toUri();
+
+        Map<String, Object> response = restTemplate.getForObject(uri, Map.class);
+
+        if (response == null || !response.containsKey("results")) {
+            return false;
+        }
+
+        Map<String, Object> results = (Map<String, Object>) response.get("results");
+        Object regionDataObject = results.get(region);
+
+        if (!(regionDataObject instanceof Map)) {
+            return false;
+        }
+
+        Map<String, Object> regionData = (Map<String, Object>) regionDataObject;
+        Object flatrateObject = regionData.get("flatrate");
+
+        if (!(flatrateObject instanceof List)) {
+            return false;
+        }
+
+        List<Map<String, Object>> providers = (List<Map<String, Object>>) flatrateObject;
+
+        return providers.stream().anyMatch(provider -> {
+            Object providerIdObject = provider.get("provider_id");
+            return providerIdObject != null && providerIdObject.toString().equals(providerId);
+        });
     }
 
     private List<MovieResponse> getFallbackMovies() {
