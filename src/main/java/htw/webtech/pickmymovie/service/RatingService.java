@@ -9,9 +9,9 @@ import java.util.List;
 
 @Service
 public class RatingService {
+
     @Autowired
     private RatingRepository ratingRepository;
-
 
     public Rating saveRating(Rating rating) {
         return ratingRepository.save(rating);
@@ -21,9 +21,21 @@ public class RatingService {
         return ratingRepository.findByMovieId(movieId);
     }
 
+    public double getAverageRatingByMovie(Long movieId) {
+        List<Rating> ratings = ratingRepository.findByMovieId(movieId);
+
+        if (ratings.isEmpty()) {
+            return 0.0;
+        }
+
+        return ratings.stream()
+                .mapToInt(Rating::getScore)
+                .average()
+                .orElse(0.0);
+    }
+
     public void deleteRating(Long ratingId) {
         ratingRepository.deleteById(ratingId);
     }
 }
-
 
