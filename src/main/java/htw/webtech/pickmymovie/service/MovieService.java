@@ -17,6 +17,9 @@ public class MovieService {
     private static final String TMDB_DISCOVER_MOVIES_URL =
             "https://api.themoviedb.org/3/discover/movie";
 
+    private static final String TMDB_SEARCH_MOVIES_URL =
+            "https://api.themoviedb.org/3/search/movie";
+
     private final RestTemplate restTemplate;
     private final String tmdbApiKey;
 
@@ -25,24 +28,39 @@ public class MovieService {
         this.tmdbApiKey = tmdbApiKey;
     }
 
-    public List<MovieResponse> getAllMovies(String genreId, String query, String providerId) {
+    public List<MovieResponse> getAllMovies(String genreId, String query, String providerId, String region) {
         if (tmdbApiKey == null || tmdbApiKey.isBlank()) {
             return getFallbackMovies();
         }
 
-        UriComponentsBuilder builder = UriComponentsBuilder
-                .fromUriString(TMDB_DISCOVER_MOVIES_URL)
-                .queryParam("api_key", tmdbApiKey)
-                .queryParam("language", "en-US")
-                .queryParam("sort_by", "popularity.desc");
+        boolean hasQuery = query != null && !query.isBlank();
+        boolean hasProvider = providerId != null && !providerId.isBlank();
+        String watchRegion = normalizeRegion(region);
+
+        UriComponentsBuilder builder;
+
+        if (hasQuery && !hasProvider) {
+            builder = UriComponentsBuilder
+                    .fromUriString(TMDB_SEARCH_MOVIES_URL)
+                    .queryParam("api_key", tmdbApiKey)
+                    .queryParam("language", "en-US")
+                    .queryParam("query", query.trim());
+        } else {
+            builder = UriComponentsBuilder
+                    .fromUriString(TMDB_DISCOVER_MOVIES_URL)
+                    .queryParam("api_key", tmdbApiKey)
+                    .queryParam("language", "en-US")
+                    .queryParam("sort_by", "popularity.desc");
+
+            if (hasProvider) {
+                builder.queryParam("watch_region", watchRegion);
+                builder.queryParam("with_watch_providers", providerId);
+                builder.queryParam("with_watch_monetization_types", "flatrate");
+            }
+        }
 
         if (genreId != null && !genreId.isBlank()) {
             builder.queryParam("with_genres", genreId);
-        }
-
-        if (providerId != null && !providerId.isBlank()) {
-            builder.queryParam("watch_region", "DE");
-            builder.queryParam("with_watch_providers", providerId);
         }
 
         URI uri = builder.build().toUri();
@@ -55,9 +73,17 @@ public class MovieService {
 
         return response.getResults()
                 .stream()
-                .filter(movie -> matchesSearchQuery(movie, query))
+                .filter(movie -> !hasProvider || matchesSearchQuery(movie, query))
                 .map(this::toMovieResponse)
                 .toList();
+    }
+
+    private String normalizeRegion(String region) {
+        if (region == null || region.isBlank()) {
+            return "DE";
+        }
+
+        return region.trim().toUpperCase();
     }
 
     private boolean matchesSearchQuery(TmdbMovie movie, String query) {
@@ -69,7 +95,7 @@ public class MovieService {
             return false;
         }
 
-        return movie.getTitle().toLowerCase().contains(query.toLowerCase());
+        return movie.getTitle().toLowerCase().contains(query.trim().toLowerCase());
     }
 
     private List<MovieResponse> getFallbackMovies() {

@@ -21,8 +21,9 @@ public class MovieController {
     public ResponseEntity<List<MovieResponse>> getMovies(
             @RequestParam(required = false) String genre,
             @RequestParam(required = false) String query,
-            @RequestParam(required = false) String provider
+            @RequestParam(required = false) String provider,
+            @RequestParam(required = false, defaultValue = "DE") String region
     ) {
-        return ResponseEntity.ok(movieService.getAllMovies(genre, query, provider));
+        return ResponseEntity.ok(movieService.getAllMovies(genre, query, provider, region));
     }
 }
