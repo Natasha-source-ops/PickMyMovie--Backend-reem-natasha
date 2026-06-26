@@ -1,5 +1,6 @@
 package htw.webtech.pickmymovie.controller;
 
+import htw.webtech.pickmymovie.controller.dto.RatingResponse;
 import htw.webtech.pickmymovie.model.Rating;
 import htw.webtech.pickmymovie.service.RatingService;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +24,7 @@ public class RatingController {
     }
 
     @GetMapping("/ratings/movie/{movieId}")
-    public List<Rating> getRatingsByMovie(@PathVariable Long movieId) {
+    public List<RatingResponse> getRating(@PathVariable Long movieId) {
         return ratingService.getRatingsByMovie(movieId);
     }
 

@@ -1,6 +1,9 @@
 package htw.webtech.pickmymovie.service;
 
 import htw.webtech.pickmymovie.Repository.RatingRepository;
+import htw.webtech.pickmymovie.Repository.UserRepository;
+import htw.webtech.pickmymovie.controller.dto.RatingResponse;
+import htw.webtech.pickmymovie.model.User;
 import htw.webtech.pickmymovie.model.Rating;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,12 +18,36 @@ public class RatingService {
     @Autowired
     private RatingRepository ratingRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     public Rating saveRating(Rating rating) {
         return ratingRepository.save(rating);
     }
 
-    public List<Rating> getRatingsByMovie(Long movieId) {
-        return ratingRepository.findByMovieId(movieId);
+    public List<RatingResponse> getRatingsByMovie(Long movieId) {
+
+        return ratingRepository.findByMovieId(movieId)
+                .stream()
+                .map(rating -> {
+
+                    User user = userRepository
+                            .findById(rating.getUserId())
+                            .orElse(null);
+
+                    String username =
+                            user != null ? user.getUsername() : "Unknown User";
+
+                    return new RatingResponse(
+                            rating.getId(),
+                            rating.getUserId(),
+                            username,
+                            rating.getMovieId(),
+                            rating.getScore(),
+                            rating.getComment()
+                    );
+                })
+                .toList();
     }
 
     public double getAverageRatingByMovie(Long movieId) {
