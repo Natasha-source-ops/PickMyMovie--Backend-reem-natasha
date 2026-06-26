@@ -1,6 +1,7 @@
 package htw.webtech.pickmymovie.controller;
 
 import htw.webtech.pickmymovie.controller.dto.MovieResponse;
+import htw.webtech.pickmymovie.controller.dto.RegionResponse;
 import htw.webtech.pickmymovie.service.MovieService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,5 +26,10 @@ public class MovieController {
             @RequestParam(required = false, defaultValue = "DE") String region
     ) {
         return ResponseEntity.ok(movieService.getAllMovies(genre, query, provider, region));
+    }
+
+    @GetMapping("/regions")
+    public ResponseEntity<List<RegionResponse>> getAvailableRegions() {
+        return ResponseEntity.ok(movieService.getAvailableRegions());
     }
 }

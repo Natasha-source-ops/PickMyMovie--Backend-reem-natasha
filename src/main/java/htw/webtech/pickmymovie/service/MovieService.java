@@ -1,6 +1,7 @@
 package htw.webtech.pickmymovie.service;
 
 import htw.webtech.pickmymovie.controller.dto.MovieResponse;
+import htw.webtech.pickmymovie.controller.dto.RegionResponse;
 import htw.webtech.pickmymovie.model.TmdbMovie;
 import htw.webtech.pickmymovie.model.TmdbResponse;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,6 +24,9 @@ public class MovieService {
 
     private static final String TMDB_WATCH_PROVIDERS_URL =
             "https://api.themoviedb.org/3/movie/{movieId}/watch/providers";
+
+    private static final String TMDB_WATCH_PROVIDER_REGIONS_URL =
+            "https://api.themoviedb.org/3/watch/providers/regions";
 
     private final RestTemplate restTemplate;
     private final String tmdbApiKey;
@@ -130,6 +134,40 @@ public class MovieService {
             Object providerIdObject = provider.get("provider_id");
             return providerIdObject != null && providerIdObject.toString().equals(providerId);
         });
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<RegionResponse> getAvailableRegions() {
+        if (tmdbApiKey == null || tmdbApiKey.isBlank()) {
+            return List.of(
+                    new RegionResponse("DE", "Germany", "Germany"),
+                    new RegionResponse("US", "United States", "United States"),
+                    new RegionResponse("GB", "United Kingdom", "United Kingdom")
+            );
+        }
+
+        URI uri = UriComponentsBuilder
+                .fromUriString(TMDB_WATCH_PROVIDER_REGIONS_URL)
+                .queryParam("api_key", tmdbApiKey)
+                .queryParam("language", "en-US")
+                .build()
+                .toUri();
+
+        Map<String, Object> response = restTemplate.getForObject(uri, Map.class);
+
+        if (response == null || !response.containsKey("results")) {
+            return List.of();
+        }
+
+        List<Map<String, Object>> results = (List<Map<String, Object>>) response.get("results");
+
+        return results.stream()
+                .map(region -> new RegionResponse(
+                        String.valueOf(region.get("iso_3166_1")),
+                        String.valueOf(region.get("english_name")),
+                        String.valueOf(region.get("native_name"))
+                ))
+                .toList();
     }
 
     private List<MovieResponse> getFallbackMovies() {
