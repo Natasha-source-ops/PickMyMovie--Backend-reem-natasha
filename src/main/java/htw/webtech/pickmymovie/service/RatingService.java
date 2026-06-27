@@ -2,6 +2,7 @@ package htw.webtech.pickmymovie.service;
 
 import htw.webtech.pickmymovie.Repository.RatingRepository;
 import htw.webtech.pickmymovie.Repository.UserRepository;
+import htw.webtech.pickmymovie.controller.dto.MovieResponse;
 import htw.webtech.pickmymovie.controller.dto.RatingResponse;
 import htw.webtech.pickmymovie.model.Rating;
 import htw.webtech.pickmymovie.model.User;
@@ -20,6 +21,9 @@ public class RatingService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private MovieService movieService;
 
     public Rating saveRating(Rating rating) {
         return ratingRepository.save(rating);
@@ -72,11 +76,20 @@ public class RatingService {
 
         String username = user != null ? user.getUsername() : "Unknown User";
 
+        MovieResponse movie = movieService.getMovieById(rating.getMovieId());
+
+        String movieTitle = movie != null ? movie.title() : "Unknown Movie";
+        String posterUrl = movie != null && movie.imageUrl() != null
+                ? "https://image.tmdb.org/t/p/w500" + movie.imageUrl()
+                : "";
+
         return new RatingResponse(
                 rating.getId(),
                 rating.getUserId(),
                 username,
                 rating.getMovieId(),
+                movieTitle,
+                posterUrl,
                 rating.getScore(),
                 rating.getComment()
         );

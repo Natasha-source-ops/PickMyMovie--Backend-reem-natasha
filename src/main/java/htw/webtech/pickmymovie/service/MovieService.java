@@ -22,6 +22,9 @@ public class MovieService {
     private static final String TMDB_SEARCH_MOVIES_URL =
             "https://api.themoviedb.org/3/search/movie";
 
+    private static final String TMDB_MOVIE_DETAILS_URL =
+            "https://api.themoviedb.org/3/movie/{movieId}";
+
     private static final String TMDB_WATCH_PROVIDERS_URL =
             "https://api.themoviedb.org/3/movie/{movieId}/watch/providers";
 
@@ -86,6 +89,35 @@ public class MovieService {
                 .filter(movie -> !hasProvider || isMovieAvailableOnProvider(movie.getId(), providerId, watchRegion))
                 .map(this::toMovieResponse)
                 .toList();
+    }
+
+    public MovieResponse getMovieById(Long movieId) {
+        if (movieId == null) {
+            return null;
+        }
+
+        if (tmdbApiKey == null || tmdbApiKey.isBlank()) {
+            return getFallbackMovies()
+                    .stream()
+                    .filter(movie -> movie.id().equals(movieId))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        URI uri = UriComponentsBuilder
+                .fromUriString(TMDB_MOVIE_DETAILS_URL.replace("{movieId}", movieId.toString()))
+                .queryParam("api_key", tmdbApiKey)
+                .queryParam("language", "en-US")
+                .build()
+                .toUri();
+
+        TmdbMovie movie = restTemplate.getForObject(uri, TmdbMovie.class);
+
+        if (movie == null) {
+            return null;
+        }
+
+        return toMovieResponse(movie);
     }
 
     private String normalizeRegion(String region) {

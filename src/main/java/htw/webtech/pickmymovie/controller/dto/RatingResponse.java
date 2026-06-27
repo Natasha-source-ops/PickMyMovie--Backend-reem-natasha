@@ -5,6 +5,8 @@ public record RatingResponse(
         Long userId,
         String username,
         Long movieId,
+        String movieTitle,
+        String posterUrl,
         int score,
         String comment
 ) {
