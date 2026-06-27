@@ -79,8 +79,9 @@ public class RatingService {
         MovieResponse movie = movieService.getMovieById(rating.getMovieId());
 
         String movieTitle = movie != null ? movie.title() : "Unknown Movie";
-        String posterUrl = movie != null && movie.imageUrl() != null
-                ? "https://image.tmdb.org/t/p/w500" + movie.imageUrl()
+
+        String posterUrl = movie != null && movie.posterPath() != null
+                ? "https://image.tmdb.org/t/p/w500" + movie.posterPath()
                 : "";
 
         return new RatingResponse(
