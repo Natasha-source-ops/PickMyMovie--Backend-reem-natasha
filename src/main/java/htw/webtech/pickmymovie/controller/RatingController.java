@@ -33,6 +33,11 @@ public class RatingController {
         return ratingService.getAverageRatingByMovie(movieId);
     }
 
+    @GetMapping("/ratings/user/{userId}")
+    public List<RatingResponse> getRatingsByUser(@PathVariable Long userId) {
+        return ratingService.getRatingsByUser(userId);
+    }
+
     @GetMapping("/ratings/averages")
     public Map<Long, Double> getAverageRatingsByMovies(
             @RequestParam List<Long> movieIds

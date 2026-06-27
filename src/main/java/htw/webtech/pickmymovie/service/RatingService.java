@@ -3,8 +3,8 @@ package htw.webtech.pickmymovie.service;
 import htw.webtech.pickmymovie.Repository.RatingRepository;
 import htw.webtech.pickmymovie.Repository.UserRepository;
 import htw.webtech.pickmymovie.controller.dto.RatingResponse;
-import htw.webtech.pickmymovie.model.User;
 import htw.webtech.pickmymovie.model.Rating;
+import htw.webtech.pickmymovie.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,27 +26,16 @@ public class RatingService {
     }
 
     public List<RatingResponse> getRatingsByMovie(Long movieId) {
-
         return ratingRepository.findByMovieId(movieId)
                 .stream()
-                .map(rating -> {
+                .map(this::toRatingResponse)
+                .toList();
+    }
 
-                    User user = userRepository
-                            .findById(rating.getUserId())
-                            .orElse(null);
-
-                    String username =
-                            user != null ? user.getUsername() : "Unknown User";
-
-                    return new RatingResponse(
-                            rating.getId(),
-                            rating.getUserId(),
-                            username,
-                            rating.getMovieId(),
-                            rating.getScore(),
-                            rating.getComment()
-                    );
-                })
+    public List<RatingResponse> getRatingsByUser(Long userId) {
+        return ratingRepository.findByUserId(userId)
+                .stream()
+                .map(this::toRatingResponse)
                 .toList();
     }
 
@@ -63,10 +52,6 @@ public class RatingService {
                 .orElse(0.0);
     }
 
-    public void deleteRating(Long ratingId) {
-        ratingRepository.deleteById(ratingId);
-    }
-
     public Map<Long, Double> getAverageRatingsByMovies(List<Long> movieIds) {
         return movieIds.stream()
                 .distinct()
@@ -75,5 +60,25 @@ public class RatingService {
                         this::getAverageRatingByMovie
                 ));
     }
-}
 
+    public void deleteRating(Long ratingId) {
+        ratingRepository.deleteById(ratingId);
+    }
+
+    private RatingResponse toRatingResponse(Rating rating) {
+        User user = userRepository
+                .findById(rating.getUserId())
+                .orElse(null);
+
+        String username = user != null ? user.getUsername() : "Unknown User";
+
+        return new RatingResponse(
+                rating.getId(),
+                rating.getUserId(),
+                username,
+                rating.getMovieId(),
+                rating.getScore(),
+                rating.getComment()
+        );
+    }
+}
