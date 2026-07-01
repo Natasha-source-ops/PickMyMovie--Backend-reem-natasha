@@ -13,18 +13,20 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Rating {
-    @Id()
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Column
     private Long userId;
+
     @Column
     private Long movieId;
+
     @Column
     private int score; // 1-5
-    @Column
+
+    @Column(length = 500)
     private String comment;
 }
-
-
