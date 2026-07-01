@@ -19,7 +19,7 @@ class MovieServiceIntegrationTest {
 
     @Test
     void getAllMoviesReturnsFallbackMoviesWhenTmdbApiKeyIsMissing() {
-        List<MovieResponse> movies = movieService.getAllMovies();
+        List<MovieResponse> movies = movieService.getAllMovies(null, null, null, null);;
 
         assertThat(movies)
                 .hasSize(3)
